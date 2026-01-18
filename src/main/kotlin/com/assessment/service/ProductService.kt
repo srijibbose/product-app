@@ -55,11 +55,12 @@ class ProductService(
 
     private fun calculateFinalPrice(product: Product): ProductResponse {
         val vatRate = vatRates[product.country] ?: 0.0
-        val totalDiscountPercent = product.discounts.sumOf { it.percent } / 100.0
-        
-        // Ensure discount doesn't exceed 100% if that's a concern, but following formula strictly:
+        var totalDiscountPercent = product.discounts.sumOf { it.percent } / 100.0
+
         // finalPrice = basePrice * (1 - totalDiscount%) * (1 + VAT%)
-        
+        if(totalDiscountPercent >100){
+            totalDiscountPercent = 100.0
+        }
         val priceAfterDiscount = product.basePrice * (1 - totalDiscountPercent)
         val finalPrice = priceAfterDiscount * (1 + vatRate)
 
