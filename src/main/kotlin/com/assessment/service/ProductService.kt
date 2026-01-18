@@ -58,8 +58,8 @@ class ProductService(
         var totalDiscountPercent = product.discounts.sumOf { it.percent } / 100.0
 
         // finalPrice = basePrice * (1 - totalDiscount%) * (1 + VAT%)
-        if(totalDiscountPercent >100){
-            totalDiscountPercent = 100.0
+        if(totalDiscountPercent >1){
+            totalDiscountPercent = 1.0
         }
         val priceAfterDiscount = product.basePrice * (1 - totalDiscountPercent)
         val finalPrice = priceAfterDiscount * (1 + vatRate)
