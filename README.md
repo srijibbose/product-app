@@ -1,47 +1,67 @@
-# product
+# Country-Based Product API
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
-
-Here are some useful links to get you started:
-
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+A simple Kotlin Ktor service that manages products and applies discounts based on business rules.
 
 ## Features
+- **Create Products**: Define products with a base price and country.
+- **Get Products**: Retrieve products by country with calculated VAT and discounts.
+- **Apply Discount**: Atomic and idempotent discount application using MongoDB.
 
-Here's a list of features included in this project:
+## Prerequisites
+- Java 21+
+- Docker & Docker Compose (for containerized run)
+- MongoDB (for local non-docker run)
 
-| Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [MongoDB](https://start.ktor.io/p/mongodb)                             | Adds MongoDB database to your application                                          |
-| [Micrometer Metrics](https://start.ktor.io/p/metrics-micrometer)       | Enables Micrometer metrics in your Ktor server application.                        |
-| [Metrics](https://start.ktor.io/p/metrics)                             | Adds supports for monitoring several metrics                                       |
-| [Call Logging](https://start.ktor.io/p/call-logging)                   | Logs client requests                                                               |
-| [Call ID](https://start.ktor.io/p/callid)                              | Allows to identify a request/call.                                                 |
-| [Status Pages](https://start.ktor.io/p/status-pages)                   | Provides exception handling for routes                                             |
+## Build and Run
 
-## Building & Running
+### Using Docker Compose (Recommended)
+This will start both the Application and MongoDB.
 
-To build or run the project, use one of the following tasks:
-
-| Task                                    | Description                                                          |
-| -----------------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`                        | Run the tests                                                        |
-| `./gradlew build`                       | Build everything                                                     |
-| `./gradlew buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `./gradlew buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `./gradlew publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `./gradlew run`                         | Run the server                                                       |
-| `./gradlew runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
+```bash
+docker-compose up --build
 ```
 
+The API will be available at `http://localhost:8080`.
+
+### Running Locally (Gradle)
+1. Ensure a MongoDB instance is running locally on port `27017`.
+2. Build and run the service:
+
+```bash
+./gradlew build
+./gradlew run
+```
+
+## API Testing (Curl Examples)
+
+### 1. Create a Product
+```bash
+curl -i -X POST http://localhost:8080/products \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Gaming Laptop", "basePrice": 1500.0, "country": "Sweden"}'
+```
+
+*(Copy the `id` from the response for the next steps)*
+
+### 2. Get Products (Sweden)
+Check the price (VAT 25% for Sweden).
+```bash
+curl -i -X GET "http://localhost:8080/products?country=Sweden"
+```
+
+### 3. Apply Discount
+Replace `{id}` with the actual product ID.
+```bash
+curl -i -X PUT "http://localhost:8080/products/{id}/discount" \
+  -H "Content-Type: application/json" \
+  -d '{"discountId": "SUMMER2025"}'
+```
+
+### 4. Verify Discount
+Call the GET endpoint again to see the updated `finalPrice` and `discounts` list.
+```bash
+curl -i -X GET "http://localhost:8080/products?country=Sweden"
+```
+
+## Architecture
+See [ARCHITECTURE.md](ARCHITECTURE.md) for design details and sequence diagrams.
