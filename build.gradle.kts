@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.ktor.server.metrics)
     implementation(libs.ktor.server.call.logging)
+    implementation("io.ktor:ktor-serialization-jackson")
     implementation(libs.ktor.server.call.id)
     implementation(libs.ktor.server.host.common)
     implementation(libs.ktor.server.status.pages)
