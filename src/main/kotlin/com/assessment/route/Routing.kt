@@ -1,6 +1,7 @@
 package com.assessment.route
 
 import com.assessment.connectToMongoDB
+import com.assessment.model.Discount
 import com.assessment.model.DiscountRequest
 import com.assessment.model.Product
 import com.assessment.repository.DiscountRepository
@@ -54,6 +55,19 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.Created, mapOf("id" to id))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid body")
+                }
+            }
+        }
+
+        route("/discounts") {
+            post {
+                try {
+                    val discount = call.receive<Discount>()
+                    discountRepository.create(discount)
+                    call.respond(HttpStatusCode.Created, "Discount created")
+                } catch (e: Exception) {
+                    // Handle duplicate key error or other issues
+                    call.respond(HttpStatusCode.BadRequest, "Invalid body or discount already exists")
                 }
             }
         }

@@ -77,4 +77,27 @@ sequenceDiagram
         Service-->>API: Throw BusinessException
         API-->>Client: 400 Bad Request
     end
+
+### POST /discounts
+Creates a new discount in the system.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Product API
+    participant Repo as DiscountRepository
+    participant DB as MongoDB
+
+    Client->>API: POST /discounts
+    Note right of Client: Body: { "discountId": "NEW_YEAR", "percent": 20.0 }
+    API->>Repo: create(discount)
+    Repo->>DB: insertOne(discount)
+    alt Success
+        DB-->>Repo: Ack
+        API-->>Client: 201 Created
+    else Failure (e.g. key collision)
+        DB-->>Repo: Exception
+        API-->>Client: 400 Bad Request
+    end
+```
 ```

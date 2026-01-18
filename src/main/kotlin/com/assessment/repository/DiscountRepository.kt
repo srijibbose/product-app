@@ -15,4 +15,8 @@ class DiscountRepository(mongoDatabase: MongoDatabase) {
     suspend fun findByDiscountID(id: String): Discount? {
         return collection.find(Filters.eq("discountId", id)).firstOrNull()
     }
+
+    suspend fun create(discount: Discount) {
+        collection.insertOne(discount)
+    }
 }

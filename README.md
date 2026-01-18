@@ -57,7 +57,15 @@ curl -i -X PUT "http://localhost:8080/products/{id}/discount" \
   -d '{"discountId": "SUMMER2025"}'
 ```
 
-### 4. Verify Discount
+### 4. Create a Discount
+You can create new discount types.
+```bash
+curl -i -X POST http://localhost:8080/discounts \
+  -H "Content-Type: application/json" \
+  -d '{"discountId": "SPECIAL10", "percent": 10.0}'
+```
+
+### 5. Verify Discount
 Call the GET endpoint again to see the updated `finalPrice` and `discounts` list.
 ```bash
 curl -i -X GET "http://localhost:8080/products?country=Sweden"
