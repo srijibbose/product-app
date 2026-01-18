@@ -77,6 +77,7 @@ sequenceDiagram
         Service-->>API: Throw BusinessException
         API-->>Client: 400 Bad Request
     end
+```
 
 ### POST /discounts
 Creates a new discount in the system.
@@ -99,5 +100,4 @@ sequenceDiagram
         DB-->>Repo: Exception
         API-->>Client: 400 Bad Request
     end
-```
 ```
