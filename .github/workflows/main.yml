@@ -25,15 +25,6 @@ jobs:
         run: |
           docker build -t ktor-app:latest .
 
-      # 3. Cache Trivy DB (faster scans)
-      - name: Cache Trivy DB
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/trivy
-          key: trivy-${{ runner.os }}
-          restore-keys: |
-            trivy-${{ runner.os }}
-
       # 4. Run Trivy scan (fail on HIGH/CRITICAL)
       - name: Run Trivy (table output)
         uses: aquasecurity/trivy-action@v0.20.0
