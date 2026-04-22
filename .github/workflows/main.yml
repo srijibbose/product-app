@@ -1,58 +1,61 @@
-name: Trivy Security Scan
+name: Trivy Docker Scan
 
 on:
   pull_request:
-    branches: [ main, develop, master ]
+    branches: [ main, develop ]
   push:
-    branches: [ main, master ]
+    branches: [ main ]
 
 permissions:
   contents: read
   security-events: write
 
 jobs:
-  trivy-scan:
-    name: Run Trivy Scan
+  trivy-image:
+    name: Build & Scan Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
-      - name: Checkout code
+      # 1. Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Cache Trivy DB (makes scans much faster)
+      # 2. Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ktor-app:latest .
+
+      # 3. Cache Trivy DB (faster scans)
       - name: Cache Trivy DB
         uses: actions/cache@v4
         with:
           path: ~/.cache/trivy
-          key: trivy-db-${{ runner.os }}-${{ hashFiles('**/build.gradle*', '**/pom.xml') }}
+          key: trivy-${{ runner.os }}
           restore-keys: |
-            trivy-db-${{ runner.os }}-
+            trivy-${{ runner.os }}
 
-      # 3. Run Trivy (table output for logs)
-      - name: Run Trivy scan (console)
+      # 4. Run Trivy scan (fail on HIGH/CRITICAL)
+      - name: Run Trivy (table output)
         uses: aquasecurity/trivy-action@v0.20.0
         with:
-          scan-type: fs
-          scan-ref: .
+          image-ref: ktor-app:latest
           format: table
-          severity: HIGH,CRITICAL,MEDIUM,LOW
+          severity: HIGH,CRITICAL,LOW,MEDIUM
           ignore-unfixed: true
           exit-code: 1
 
-      # 4. Run Trivy again for SARIF (GitHub Security tab)
-      - name: Run Trivy scan (SARIF)
+      # 5. Generate SARIF report
+      - name: Run Trivy (SARIF)
         uses: aquasecurity/trivy-action@v0.20.0
         with:
-          scan-type: fs
-          scan-ref: .
+          image-ref: ktor-app:latest
           format: sarif
           output: trivy-results.sarif
-          severity: HIGH,CRITICAL,MEDIUM,LOW
+          severity: HIGH,CRITICAL,LOW,MEDIUM
           ignore-unfixed: true
 
-      # 5. Upload results to GitHub Security tab
-      - name: Upload Trivy results
+      # 6. Upload to GitHub Security tab
+      - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
