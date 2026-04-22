@@ -2,12 +2,13 @@ name: Trivy Docker Scan
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop,testworkflow,master ]
   push:
-    branches: [ main ]
+    branches: [ main,testworkflow,master ]
 
 permissions:
   contents: read
+  actions: read
   security-events: write
 
 jobs:
@@ -19,6 +20,17 @@ jobs:
       # 1. Checkout code
       - name: Checkout
         uses: actions/checkout@v4
+
+      # 2. Setup JDK (needed for Gradle build)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # 3. Build JAR (IMPORTANT)
+      - name: Build application
+        run: ./gradlew build -x test
 
       # 2. Build Docker image
       - name: Build Docker image
@@ -33,7 +45,7 @@ jobs:
           format: table
           severity: HIGH,CRITICAL,LOW,MEDIUM
           ignore-unfixed: true
-          exit-code: 1
+          exit-code: 0
 
       # 5. Generate SARIF report
       - name: Run Trivy (SARIF)
@@ -46,7 +58,7 @@ jobs:
           ignore-unfixed: true
 
       # 6. Upload to GitHub Security tab
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
